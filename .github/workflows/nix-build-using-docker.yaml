@@ -6,6 +6,39 @@ on:
         description: 'Type of the build'
         required: true
         default: 'worker'
+      user: 
+        description: 'User to use for the build'
+        required: true
+        default: 'worker'
+      password:
+        description: 'Password to use for the build'
+        required: true
+        default: 'worker'
+      ssh_pubkey:
+        description: 'SSH public key to use for the build'
+        required: true
+        default: 'worker'
+      ssid:
+        description: 'SSID to use for the build'
+        required: true
+        default: 'worker'
+      ssid_password:
+        description: 'SSID password to use for the build'
+        required: true
+        default: 'worker'
+      hostname:
+        description: 'Hostname to use for the build'
+        required: true
+        default: 'worker'
+      control_node_ip:
+        description: 'Control node IP'
+        required: true
+        default: 'worker'
+      k3s_token:
+        description: 'K3s token'
+        required: true
+        default: 'worker'
+      
       
 jobs:
   build-custom-image:
@@ -13,12 +46,14 @@ jobs:
     name: Build custom image
     runs-on: ubuntu-22.04
     env:
-      NIXOS_USER: ${{ secrets.NIXOS_USER }}
-      NIXOS_PASSWORD: ${{ secrets.NIXOS_PASSWORD }}
-      NIXOS_SSH_PUBKEY: ${{ secrets.NIXOS_SSH_PUBKEY }}
-      NIXOS_SSID: ${{ secrets.NIXOS_SSID }}
-      NIXOS_SSID_PASSWORD: ${{ secrets.NIXOS_SSID_PASSWORD }}
-      NIXOS_HOSTNAME: ${{ secrets.NIXOS_HOSTNAME }}
+      NIXOS_USER: ${{ github.event.inputs.user }}
+      NIXOS_PASSWORD: ${{ github.event.inputs.password }}
+      NIXOS_SSH_PUBKEY: ${{ github.event.inputs.ssh_pubkey }}
+      NIXOS_SSID: ${{ github.event.inputs.ssid }}
+      NIXOS_SSID_PASSWORD: ${{ github.event.inputs.ssid_password }}
+      NIXOS_HOSTNAME: ${{ github.event.inputs.hostname }}
+      CONTROL_NODE_IP: ${{ github.event.inputs.CONTROL_NODE_IP }}
+      K3S_TOKEN: ${{ github.event.inputs.k3s_token }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: cachix/install-nix-action@v26
