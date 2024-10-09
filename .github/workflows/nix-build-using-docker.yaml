@@ -36,7 +36,7 @@ jobs:
         cat /proc/sys/fs/binfmt_misc/qemu-aarch64
     - name: Build SD Image
       run: |
-        nix build .#nixosConfigurations.raspberry-pi_3_${{ matrix.kind }}.config.system.build.sdImage
+        nix build .#nixosConfigurations.raspberry-pi_3_${{ github.event.inputs.type }}.config.system.build.sdImage
     - uses: actions/upload-artifact@v4
       with:
         name: sd-image.img
