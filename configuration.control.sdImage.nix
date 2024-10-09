@@ -8,7 +8,7 @@
     <nixos/nixos/modules/installer/cd-dvd/channel.nix>
 
     # main configuration
-    ./configuration.nix
+    ./configuration.control.nix
   ];
 
   sdImage.compressImage = false;

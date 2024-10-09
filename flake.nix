@@ -20,12 +20,12 @@
           in
           rec {
              # to build: nix build github:lucernae/nix-config#nixosConfigurations.raspberry-pi_3.config.system.build.sdImage
-            raspberry-pi_3 = nixosSystem {
+            raspberry-pi_3_worker = nixosSystem {
               system = "aarch64-linux";
               modules = [
                 "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-installer.nix"
                 # replace this with your target configuration
-                ./configuration.nix
+                ./configuration.worker.nix
 
                 # extra config for sdImage generator
                 {
@@ -33,12 +33,12 @@
                 }
               ];
             };
-            raspberry-pi_3_default = nixosSystem {
+            raspberry-pi_3_control = nixosSystem {
               system = "aarch64-linux";
               modules = [
                 "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-installer.nix"
                 # replace this with your target configuration
-                ./configuration.default.nix
+                ./configuration.control.nix
 
                 # extra config for sdImage generator
                 {

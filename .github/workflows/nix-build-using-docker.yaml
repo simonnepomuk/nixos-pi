@@ -2,53 +2,23 @@ name: nix-build-on-demand-docker
 on:
   workflow_dispatch:
     inputs:
-      environmentName:
-        description: Environment name that stores configuration.nix
+      type:
+        description: 'Type of the build'
         required: true
-        default: default
+        default: 'worker'
       
 jobs:
-  build-default-image:
-    name: Build default image
-    if: ${{ github.event.inputs.environmentName == 'default' }}
-    runs-on: ubuntu-22.04
-    steps:
-    - uses: actions/checkout@v4.1.1
-    - uses: cachix/install-nix-action@v26
-      with:
-        nix_path: nixos=channel:nixos-23.05
-        extra_nix_config: |
-          extra-platforms = aarch64-linux
-    - name: Check nix.conf
-      run: cat /etc/nix/nix.conf
-    - name: Register binfmt
-      run: |
-        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - name: Test binfmt availability
-      run: |
-        cat /proc/sys/fs/binfmt_misc/qemu-aarch64
-    # non flake way to build
-#    - name: Build SD Image
-#      run: |
-#        nix-build '<nixos/nixos>'  \
-#          -A config.system.build.sdImage \
-#          -I nixos-config=./configuration.default.sdImage.nix \
-#          --argstr system aarch64-linux \
-#          --option sandbox false
-    - name: Build SD Image
-      run: |
-        nix build .#nixosConfigurations.raspberry-pi_3_default.config.system.build.sdImage
-    - uses: actions/upload-artifact@v4
-      with:
-        name: sd-image.img
-        path: ./result/sd-image/*.img*
-
   build-custom-image:
+    if: ${{ github.event.inputs.type == 'worker' || github.event.inputs.type == 'control' }}
     name: Build custom image
-    if: ${{ github.event.inputs.environmentName != 'default' }}
     runs-on: ubuntu-22.04
-    environment:
-      name: ${{ github.event.inputs.environmentName }}
+    env:
+      NIXOS_USER: ${{ secrets.NIXOS_USER }}
+      NIXOS_PASSWORD: ${{ secrets.NIXOS_PASSWORD }}
+      NIXOS_SSH_PUBKEY: ${{ secrets.NIXOS_SSH_PUBKEY }}
+      NIXOS_SSID: ${{ secrets.NIXOS_SSID }}
+      NIXOS_SSID_PASSWORD: ${{ secrets.NIXOS_SSID_PASSWORD }}
+      NIXOS_HOSTNAME: ${{ secrets.NIXOS_HOSTNAME }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: cachix/install-nix-action@v26
@@ -64,22 +34,9 @@ jobs:
     - name: Test binfmt availability
       run: |
         cat /proc/sys/fs/binfmt_misc/qemu-aarch64
-    - name: Extract configuration from secrets
-      run: |
-        cat << EOF >> configuration.nix
-        ${{ secrets.CONFIGURATION_NIX }}
-        EOF
-    # non nix flake way to build
-#    - name: Build SD Image
-#      run: |
-#        nix-build '<nixos/nixos>'  \
-#          -A config.system.build.sdImage \
-#          -I nixos-config=./configuration.custom.sdImage.nix \
-#          --argstr system aarch64-linux \
-#          --option sandbox false
     - name: Build SD Image
       run: |
-        nix build .#nixosConfigurations.raspberry-pi_3_default.config.system.build.sdImage
+        nix build .#nixosConfigurations.raspberry-pi_3_${{ matrix.kind }}.config.system.build.sdImage
     - uses: actions/upload-artifact@v4
       with:
         name: sd-image.img
